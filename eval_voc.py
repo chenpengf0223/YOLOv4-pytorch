@@ -71,6 +71,9 @@ class Evaluation(object):
             logger.info("***********Start Detection****************")
             for v in imgs:
                 path = os.path.join(self.__visiual, v)
+                _, file_type = os.path.splitext(path)
+                if file_type != '.jpg': #json
+                    continue
                 logger.info("val images : {}".format(path))
 
                 img = cv2.imread(path)

@@ -1,7 +1,7 @@
 # coding=utf-8
 # project
-DATA_PATH = "E:\YOLOV4/data"
-PROJECT_PATH = "E:\YOLOV4/data"
+DATA_PATH = "/home/chenp/YOLOv4-pytorch/data"
+PROJECT_PATH = "/home/chenp/YOLOv4-pytorch/data"
 DETECTION_PATH = "E:\YOLOV4/"
 
 MODEL_TYPE = {
@@ -14,7 +14,7 @@ ATTENTION = {"TYPE": "NONE"}  # attention type:SEnet、CBAM or NONE
 
 # train
 TRAIN = {
-    "DATA_TYPE": "VOC",  # DATA_TYPE: VOC ,COCO or Customer
+    "DATA_TYPE": "Customer",  # DATA_TYPE: VOC ,COCO or Customer
     "TRAIN_IMG_SIZE": 416,
     "AUGMENT": True,
     "BATCH_SIZE": 2,
@@ -44,8 +44,9 @@ VAL = {
 }
 
 Customer_DATA = {
-    "NUM": 1,  # your dataset number
-    "CLASSES": ["aeroplane"],  # your dataset class
+    "NUM": 2,  # your dataset number
+    "CLASSES": ["zhibeidangao",
+    "qifeng"],  # your dataset class
 }
 
 VOC_DATA = {
