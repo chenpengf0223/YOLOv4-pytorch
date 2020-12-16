@@ -1,3 +1,12 @@
 __pycache__/
 */__pycache__/
 */*/__pycache__/
+data/detection_result*
+data/train_annotation.txt
+data/test_annotation.txt
+data/VOCtest-2007
+data/pred_result
+output
+*.log
+log
+log_val
