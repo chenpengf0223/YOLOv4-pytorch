@@ -84,7 +84,10 @@ class Trainer(object):
             warmup=cfg.TRAIN["WARMUP_EPOCHS"] * len(self.train_dataloader),
         )
         if resume:
+            print('cp log resume training.')
             self.__load_resume_weights(weight_path)
+        else:
+            print('resume is false.')
 
     def __load_resume_weights(self, weight_path):
 
@@ -99,10 +102,12 @@ class Trainer(object):
         del chkpt
 
     def __save_model_weights(self, epoch, mAP):
-        if mAP > self.best_mAP:
+        should_save = False
+        if mAP >= self.best_mAP:
             self.best_mAP = mAP
+            should_save = True
         best_weight = os.path.join(
-            os.path.split(self.weight_path)[0], "best.pt"
+            os.path.split(self.weight_path)[0], str(epoch) + "-best.pt"
         )
         last_weight = os.path.join(
             os.path.split(self.weight_path)[0], "last.pt"
@@ -114,8 +119,8 @@ class Trainer(object):
             "optimizer": self.optimizer.state_dict(),
         }
         torch.save(chkpt, last_weight)
-
-        if self.best_mAP == mAP:
+        # if self.best_mAP == mAP:
+        if should_save:
             torch.save(chkpt["model"], best_weight)
 
         if epoch > 0 and epoch % 10 == 0:
@@ -210,7 +215,7 @@ class Trainer(object):
                 if i % 10 == 0:
 
                     logger.info(
-                        "  === Epoch:[{:3}/{}],step:[{:3}/{}],img_size:[{:3}],total_loss:{:.4f}|loss_ciou:{:.4f}|loss_conf:{:.4f}|loss_cls:{:.4f}|lr:{:.4f}".format(
+                        "  === Epoch:[{:3}/{}],step:[{:3}/{}],img_size:[{:3}],total_loss:{:.4f}|loss_ciou:{:.4f}|loss_conf:{:.4f}|loss_cls:{:.4f}|lr:{:.8f}".format(
                             epoch,
                             self.epochs,
                             i,
@@ -270,7 +275,7 @@ class Trainer(object):
                     with torch.no_grad():
                         APs, inference_time = Evaluator(
                             self.yolov4, showatt=False
-                        ).APs_voc()
+                        ).APs_voc(multi_test=False)
                         for i in APs:
                             logger.info("{} --> mAP : {}".format(i, APs[i]))
                             mAP += APs[i]

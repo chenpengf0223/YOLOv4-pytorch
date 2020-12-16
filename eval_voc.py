@@ -19,7 +19,8 @@ class Evaluation(object):
         visiual=None,
         eval=False,
     ):
-        self.__num_class = cfg.VOC_DATA["NUM"]
+        # self.__num_class = cfg.VOC_DATA["NUM"]
+        self.__num_class = cfg.Customer_DATA["NUM"]
         self.__conf_threshold = cfg.VAL["CONF_THRESH"]
         self.__nms_threshold = cfg.VAL["NMS_THRESH"]
         self.__device = gpu.select_device(gpu_id)
@@ -28,7 +29,8 @@ class Evaluation(object):
 
         self.__visiual = visiual
         self.__eval = eval
-        self.__classes = cfg.VOC_DATA["CLASSES"]
+        # self.__classes = cfg.VOC_DATA["CLASSES"]
+        self.__classes = cfg.Customer_DATA["CLASSES"]
 
         self.__model = Build_Model().to(self.__device)
 
@@ -66,11 +68,17 @@ class Evaluation(object):
 
     def detection(self):
         global logger
-        if self.__visiual:
-            imgs = os.listdir(self.__visiual)
-            logger.info("***********Start Detection****************")
-            for v in imgs:
-                path = os.path.join(self.__visiual, v)
+        if not self.__visiual:
+            return
+        
+        # imgs = os.listdir(self.__visiual)
+        # logger.info("***********Start Detection****************")
+        # for v in imgs:
+        #     path = os.path.join(self.__visiual, v)
+        for files in os.walk(self.__visiual):
+            # print(files)
+            for tp_f in files[2]:
+                path = files[0] + '/' + tp_f
                 _, file_type = os.path.splitext(path)
                 if file_type != '.jpg': #json
                     continue
@@ -78,8 +86,8 @@ class Evaluation(object):
 
                 img = cv2.imread(path)
                 assert img is not None
-
-                bboxes_prd = self.__evalter.get_bbox(img, v)
+                v = path.split('/')[-1]
+                bboxes_prd = self.__evalter.get_bbox(img) #, v
                 if bboxes_prd.shape[0] != 0:
                     boxes = bboxes_prd[..., :4]
                     class_inds = bboxes_prd[..., 5].astype(np.int32)

@@ -54,6 +54,8 @@ class Evaluator(object):
             img = cv2.imread(img_path)
             bboxes_prd = self.get_bbox(img, multi_test, flip_test)
 
+            img_s = img.copy()
+            
             f = open("./output/" + img_ind + ".txt", "w")
             for bbox in bboxes_prd:
                 coor = np.array(bbox[:4], dtype=np.int32)
@@ -63,6 +65,15 @@ class Evaluator(object):
                 class_name = self.classes[class_ind]
                 score = "%.4f" % score
                 xmin, ymin, xmax, ymax = map(str, coor)
+                cv2.rectangle(img_s, (int(xmin), int(ymin)), (int(xmax), int(ymax)), (0,255,0), 1, 8, 0)
+                bottomLeftCornerOfText = (int(xmin), int(ymin))
+                fontScale = 1.0
+                fontColor = (255, 200, 0)
+                lineType = 2
+                font = cv2.FONT_HERSHEY_SIMPLEX
+                cv2.putText(img_s, str(score), bottomLeftCornerOfText, 
+                    font, fontScale, fontColor, lineType)
+
                 s = " ".join([img_ind, score, xmin, ymin, xmax, ymax]) + "\n"
 
                 with open(
@@ -85,11 +96,13 @@ class Evaluator(object):
                     )
                 )
             f.close()
+            cv2.imwrite(str(img_ind) + '-test.jpg', img_s)
         self.inference_time = 1.0 * self.inference_time / len(img_inds)
-        return self.__calc_APs(), self.inference_time
+        return self.__calc_APs(use_07_metric=True), self.inference_time
 
     def get_bbox(self, img, multi_test=False, flip_test=False):
         if multi_test:
+            print('mylog: multi test')
             test_input_sizes = range(320, 640, 96)
             bboxes_list = []
             for test_input_size in test_input_sizes:
@@ -107,9 +120,11 @@ class Evaluator(object):
                     bboxes_list.append(bboxes_flip)
             bboxes = np.row_stack(bboxes_list)
         else:
+            print('mylog: single scale test.')
             bboxes = self.__predict(img, self.val_shape, (0, np.inf))
 
         bboxes = nms(bboxes, self.conf_thresh, self.nms_thresh)
+        print('sppppppp', bboxes.shape, bboxes)
 
         return bboxes
 
@@ -218,7 +233,7 @@ class Evaluator(object):
         cachedir = os.path.join(self.pred_result_path, "cache")
         # annopath = os.path.join(self.val_data_path, 'Annotations', '{:s}.xml')
         annopath = os.path.join(
-            self.val_data_path, "Annotations\\" + "{:s}.xml"
+            self.val_data_path, "Annotations/" + "{:s}.xml"
         )
         imagesetfile = os.path.join(
             self.val_data_path, "ImageSets", "Main", "test.txt"
