@@ -1,4 +1,4 @@
-python3 add_new_data.py
+python3 split_dataset_into_train_test.py
 
 python3 utils/custom_data.py
 
