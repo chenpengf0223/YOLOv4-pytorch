@@ -66,14 +66,17 @@ class Evaluator(object):
                 score = "%.4f" % score
                 xmin, ymin, xmax, ymax = map(str, coor)
                 cv2.rectangle(img_s, (int(xmin), int(ymin)), (int(xmax), int(ymax)), (0,255,0), 1, 8, 0)
-                bottomLeftCornerOfText = (int(xmin), int(ymin))
+                height = ymax - ymin
+                bottomLeftCornerOfText = (int(xmin), int(ymin+0.1*height))
                 fontScale = 1.0
                 fontColor = (255, 200, 0)
                 lineType = 2
                 font = cv2.FONT_HERSHEY_SIMPLEX
                 cv2.putText(img_s, str(score), bottomLeftCornerOfText, 
                     font, fontScale, fontColor, lineType)
-
+                bottomLeftCornerOfText = (int(xmin), int(ymax))
+                cv2.putText(img_s, str(class_name), bottomLeftCornerOfText, 
+                    font, fontScale, fontColor, lineType)
                 s = " ".join([img_ind, score, xmin, ymin, xmax, ymax]) + "\n"
 
                 with open(
@@ -142,6 +145,8 @@ class Evaluator(object):
                 _, p_d = self.model(img)
             self.inference_time += current_milli_time() - start_time
         pred_bbox = p_d.squeeze().cpu().numpy()
+        print('pred_bbox', pred_bbox.shape)
+        input()
         bboxes = self.__convert_pred(
             pred_bbox, test_shape, (org_h, org_w), valid_scale
         )
@@ -219,6 +224,12 @@ class Evaluator(object):
         )
 
         return bboxes
+
+    def convert_pred(
+        self, pred_bbox, test_input_size, org_img_shape, valid_scale):
+        bboxes = self.__convert_pred(pred_bbox, test_input_size, org_img_shape, valid_scale)
+        return nms(bboxes, self.conf_thresh, self.nms_thresh)
+
 
     def __calc_APs(self, iou_thresh=0.5, use_07_metric=False):
         """
